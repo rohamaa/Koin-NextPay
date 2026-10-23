@@ -60,7 +60,7 @@ final class NextpayGatewayTest extends TestCase
 
     public function testRefundReturnsRefundedStatus(): void
     {
-        $gateway = new NextpayGateway('k');
+        $gateway = new NextpayGateway('k', refundable: true);
         $gateway->setClient($this->mockHttp([[200, ['code' => -90, 'amount' => 1000]]]));
 
         $result = $gateway->refund('t1', 'o1', 1000);
@@ -71,7 +71,7 @@ final class NextpayGatewayTest extends TestCase
 
     public function testRefundThrowsForAFailureCode(): void
     {
-        $gateway = new NextpayGateway('k');
+        $gateway = new NextpayGateway('k', refundable: true);
         $gateway->setClient($this->mockHttp([[200, ['code' => -93]]]));
 
         $this->expectException(PaymentFailedException::class);
@@ -133,5 +133,14 @@ final class NextpayGatewayTest extends TestCase
     public function testLangFilesCoverTheNextpayName(): void
     {
         $this->assertSame('NextPay', Translator::trans('Koin-nextpay:driver.name'));
+    }
+    public function testRefundRequiresTheRefundableFlag(): void
+    {
+        $gateway = new NextpayGateway('k');
+
+        $this->expectException(InvalidRequestException::class);
+        $this->expectExceptionMessage('constructed with refundable: true');
+
+        $gateway->refund('t1');
     }
 }

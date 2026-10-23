@@ -94,9 +94,9 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
         -94 => 'refund key not found',
     ];
 
-    public function __construct(string $apiKey, ?string $callbackUrl = null, bool $sandbox = false, array $extra = [])
+    public function __construct(string $apiKey, ?string $callbackUrl = null, bool $sandbox = false, array $extra = [], bool $refundable = false)
     {
-        $this->paymentConstruct($apiKey, $callbackUrl, $sandbox, $extra);
+        $this->paymentConstruct($apiKey, $callbackUrl, $sandbox, $extra, $refundable);
 
         Translator::register('Koin-' . self::name, dirname(__DIR__) . '/lang');
         $this->client = new Client([
@@ -289,6 +289,10 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
         ?string $currency = null,
         array $extra = [],
     ): RefundResponse {
+        if (!$this->refundable) {
+            throw new InvalidRequestException('NextPay refunds are only available for gateways constructed with refundable: true.', gateway: self::name);
+        }
+
         if ($amount === null) {
             throw new InvalidRequestException('NextPay requires the amount to refund.', gateway: self::name);
         }
