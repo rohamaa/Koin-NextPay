@@ -2,7 +2,6 @@
 
 namespace Rohama\Koin\Nextpay;
 
-use GuzzleHttp\Client;
 use Rohama\Koin\Support\Currency;
 use Rohama\Koin\Support\PaymentStatus;
 use Rohama\Koin\Exception\InvalidRequestException;
@@ -99,12 +98,12 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
         $this->paymentConstruct($apiKey, $callbackUrl, $sandbox, $extra, $refundable);
 
         Translator::register('Koin-' . self::name, dirname(__DIR__) . '/lang');
-        $this->client = new Client([
-            'base_uri' => 'https://nextpay.org/nx/gateway',
-            'timeout' => 15,
-            'connect_timeout' => 10,
-            'http_errors' => false,
-        ]);
+    }
+
+
+    protected function baseUri(): string
+    {
+        return 'https://nextpay.org/nx/gateway';
     }
 
     public static function configFields(): array
@@ -147,8 +146,8 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
             throw new InvalidRequestException('NextPay requires a callback URL.', gateway: self::name);
         }
 
-        $response = $this->client()->post('/token', [
-            'json' => array_filter(array_merge([
+        $response = $this->client->post('/token', [
+                'json' => array_filter(array_merge([
                 'api_key' => $this->apiKey,
                 'order_id' => $orderId,
                 'amount' => $amount,
@@ -206,8 +205,8 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
             throw new InvalidRequestException('NextPay requires the original amount for verification.', gateway: self::name);
         }
 
-        $response = $this->client()->post('/verify', [
-            'json' => array_filter(array_merge([
+        $response = $this->client->post('/verify', [
+                'json' => array_filter(array_merge([
                 'api_key' => $this->apiKey,
                 'trans_id' => $transactionId,
                 'amount' => $amount,
@@ -297,8 +296,8 @@ class NextpayGateway implements PaymentGateway, RefundableGateway
             throw new InvalidRequestException('NextPay requires the amount to refund.', gateway: self::name);
         }
 
-        $response = $this->client()->post('/verify', [
-            'json' => array_filter(array_merge([
+        $response = $this->client->post('/verify', [
+                'json' => array_filter(array_merge([
                 'api_key' => $this->apiKey,
                 'trans_id' => $transactionId,
                 'amount' => $amount,
